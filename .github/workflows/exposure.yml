@@ -2,12 +2,14 @@ name: Daily Exposure Challenge
 
 on:
   schedule:
-    - cron: '0 7 * * *'
+    - cron: '0 1 * * *'
   workflow_dispatch:
 
 jobs:
   add-challenge:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       
@@ -16,24 +18,16 @@ jobs:
         with:
           node-version: '20'
       
-      - name: Debug secrets
-        run: |
-          echo "USER_ID length: ${#HABITICA_USER_ID}"
-          echo "API_KEY length: ${#HABITICA_API_KEY}"
-        env:
-          HABITICA_USER_ID: ${{ secrets.HABITICA_USER_ID }}
-          HABITICA_API_KEY: ${{ secrets.HABITICA_API_KEY }}
-      
       - name: Run challenge
         env:
           HABITICA_USER_ID: ${{ secrets.HABITICA_USER_ID }}
           HABITICA_API_KEY: ${{ secrets.HABITICA_API_KEY }}
         run: node challenge.js
       
-      - name: Commit count
+      - name: Commit and push
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add count.json 2>/dev/null || true
-          git commit -m "update challenge count" 2>/dev/null || true
-          git push 2>/dev/null || true
+          git add count.json
+          git commit -m "update challenge count"
+          git push
